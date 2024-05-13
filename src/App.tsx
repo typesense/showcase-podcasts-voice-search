@@ -78,7 +78,7 @@ function App() {
                 key={id}
               >
                 <img
-                  className='h-full aspect-square rounded-lg'
+                  className='aspect-square rounded-lg min-h-full'
                   src={image}
                   alt={`${title}: ${description}`}
                 />
