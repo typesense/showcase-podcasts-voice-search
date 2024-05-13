@@ -1,7 +1,9 @@
 import Typesense from 'typesense';
 import 'dotenv/config';
-import diffusionDB from './data/data.json';
+import fs from 'fs/promises';
+import { resolve } from 'path';
 
+const COLLECTION_NAME = 'podcasts';
 (async () => {
   console.log('Connecting to typesense server...');
 
@@ -18,14 +20,14 @@ import diffusionDB from './data/data.json';
   });
 
   try {
-    await typesense.collections('DiffusionDB').retrieve();
-    console.log('Found existing collection of DiffusionDB');
+    await typesense.collections(COLLECTION_NAME).retrieve();
+    console.log(`Found existing collection of ${COLLECTION_NAME}`);
 
     if (process.env.FORCE_REINDEX !== 'true')
       return console.log('FORCE_REINDEX = false. Canceling operation...');
 
     console.log('Deleting collection');
-    await typesense.collections('DiffusionDB').delete();
+    await typesense.collections(COLLECTION_NAME).delete();
   } catch (err) {
     console.error(err);
   }
@@ -33,30 +35,18 @@ import diffusionDB from './data/data.json';
   console.log('Creating schema...');
 
   await typesense.collections().create({
-    name: 'DiffusionDB',
+    name: COLLECTION_NAME,
     fields: [
       {
-        name: 'image_name',
+        name: 'title',
         type: 'string',
       },
       {
-        name: 'prompt',
+        name: 'author',
         type: 'string',
       },
       {
-        name: 'seed',
-        type: 'string',
-      },
-      {
-        name: 'step',
-        type: 'string',
-      },
-      {
-        name: 'cfg',
-        type: 'auto',
-      },
-      {
-        name: 'sampler',
+        name: 'description',
         type: 'string',
       },
     ],
@@ -67,11 +57,16 @@ import diffusionDB from './data/data.json';
 
   console.log('Indexing data');
 
+  const jsonlPodcasts = await fs.readFile(
+    resolve(resolve(), './scripts/data/podcasts-1000-samples.jsonl'),
+    'utf-8'
+  );
+
   try {
     const returnData = await typesense
-      .collections('DiffusionDB')
+      .collections(COLLECTION_NAME)
       .documents()
-      .import(diffusionDB);
+      .import(jsonlPodcasts);
 
     console.log('Return data: ', returnData);
   } catch (error) {
