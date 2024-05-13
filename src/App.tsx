@@ -6,7 +6,7 @@ import {
 } from './lib/typesense';
 import VoiceSearchPopup from './components/VoiceRecordingPopup';
 import { Button } from './components/ui/button';
-import { MicIcon } from 'lucide-react';
+import { LucideSearch, MicIcon } from 'lucide-react';
 import Heading from './components/Heading';
 
 function App() {
@@ -51,13 +51,16 @@ function App() {
     <main className='max-w-3xl m-auto py-10'>
       <Heading />
       <div className='flex gap-2 mb-8'>
-        <input
-          type='text'
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className='flex h-10 w-full px-6 rounded-3xl border border-input bg-background py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50'
-          placeholder='Search...'
-        />
+        <div className='relative w-full'>
+          <LucideSearch className='absolute top-1/2 -translate-y-1/2 left-4 stroke-1 size-5 stroke-muted-foreground' />
+          <input
+            type='text'
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className='flex h-10 w-full px-12 rounded-3xl border border-input bg-background py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50'
+            placeholder='Search...'
+          />
+        </div>
         <VoiceSearchPopup
           handleBase64AudioChange={(base64Audio) => setBase64Audio(base64Audio)}
         >
