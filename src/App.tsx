@@ -1,13 +1,17 @@
 import { useEffect, useState } from 'react';
-import './App.css';
-import { typesense } from './lib/typesense';
+import {
+  _PodcastHit,
+  _PodcastSearchResponse,
+  typesense,
+} from './lib/typesense';
 import VoiceSearchPopup from './components/VoiceRecordingPopup';
 import { Button } from './components/ui/button';
 import { MicIcon } from 'lucide-react';
+import Heading from './components/Heading';
 
 function App() {
   const [base64Audio, setBase64Audio] = useState<string | null>(null);
-  const [data, setData] = useState<unknown[]>([]);
+  const [data, setData] = useState<_PodcastHit[]>([]);
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -18,15 +22,16 @@ function App() {
         const results = await typesense.multiSearch.perform({
           searches: [
             {
-              collection: 'DiffusionDB',
-              query_by: 'prompt',
+              collection: 'podcasts',
+              query_by: 'title,author,description',
               voice_query: base64Audio,
+              per_page: 20,
             },
           ],
         });
         console.log(results);
 
-        setData(results.results?.[0].hits as unknown[]);
+        setData((results.results?.[0] as _PodcastSearchResponse).hits || []);
       } catch (error) {
         console.log(error);
       }
@@ -39,23 +44,13 @@ function App() {
   }, [base64Audio]);
 
   return (
-    <>
-      <h1 className='text-3xl font-semibold'>Voice query</h1>
-      <h2 className='m-auto w-max text-sm'>
-        powered by{' '}
-        <a
-          href='https://typesense.org/'
-          target='_blank'
-          rel='noopener noreferrer'
-          className='text-typesense-accent'
-        >
-          type<b>sense|</b>
-        </a>
-      </h2>{' '}
-      <div className='flex gap-2'>
+    <main className='max-w-3xl m-auto py-10'>
+      <Heading />
+      <div className='flex gap-2 mb-8'>
         <input
           type='text'
-          className='flex h-10 w-full rounded-3xl border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50'
+          className='flex h-10 w-full px-6 rounded-3xl border border-input bg-background py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50'
+          placeholder='Search...'
         />
         <VoiceSearchPopup
           handleBase64AudioChange={(base64Audio) => setBase64Audio(base64Audio)}
@@ -65,11 +60,41 @@ function App() {
           </Button>
         </VoiceSearchPopup>
       </div>
-      {base64Audio && (
-        <audio className='h-12' controls src={base64Audio}></audio>
+      {data && (
+        <ul className='flex flex-col gap-2'>
+          {data.map(
+            ({ document: { title, description, author, image, id } }) => (
+              <li
+                className='p-2 flex h-28 hover:bg-muted transition rounded-lg border-b'
+                key={id}
+              >
+                <img
+                  className='h-full aspect-square rounded-lg'
+                  src={image}
+                  alt={`${title}: ${description}`}
+                />
+                <div className='flex flex-col items-start text-left px-4'>
+                  <h3 className='text-base font-medium line-clamp-1'>
+                    {title}
+                  </h3>
+                  <small className='text-xs mb-3 line-clamp-1'>{author}</small>
+                  <p className='line-clamp-2 text-xs text-muted-foreground'>
+                    {description}
+                  </p>
+                </div>
+              </li>
+            )
+          )}
+        </ul>
       )}
-      {data && <small> {JSON.stringify(data)}</small>}
-    </>
+      {base64Audio && (
+        <audio
+          className='h-12 fixed bottom-4 right-4'
+          controls
+          src={base64Audio}
+        ></audio>
+      )}
+    </main>
   );
 }
 
