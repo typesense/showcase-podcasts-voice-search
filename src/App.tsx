@@ -12,6 +12,7 @@ import Heading from './components/Heading';
 function App() {
   const [base64Audio, setBase64Audio] = useState<string | null>(null);
   const [data, setData] = useState<_PodcastHit[]>([]);
+  const [query, setQuery] = useState('');
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -29,9 +30,12 @@ function App() {
             },
           ],
         });
-        console.log(results);
+        const res = results.results?.[0] as _PodcastSearchResponse;
 
-        setData((results.results?.[0] as _PodcastSearchResponse).hits || []);
+        setData(res.hits || []);
+        setQuery(
+          res.request_params.voice_query?.transcribed_query.trim() || ''
+        );
       } catch (error) {
         console.log(error);
       }
@@ -49,6 +53,8 @@ function App() {
       <div className='flex gap-2 mb-8'>
         <input
           type='text'
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
           className='flex h-10 w-full px-6 rounded-3xl border border-input bg-background py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50'
           placeholder='Search...'
         />
@@ -65,7 +71,7 @@ function App() {
           {data.map(
             ({ document: { title, description, author, image, id } }) => (
               <li
-                className='p-2 flex h-28 hover:bg-muted transition rounded-lg border-b'
+                className='p-2 flex h-28 hover:bg-muted transition rounded-lg border'
                 key={id}
               >
                 <img
@@ -73,7 +79,7 @@ function App() {
                   src={image}
                   alt={`${title}: ${description}`}
                 />
-                <div className='flex flex-col items-start text-left px-4'>
+                <div className='flex flex-col items-start text-left px-4 py-0.5'>
                   <h3 className='text-base font-medium line-clamp-1'>
                     {title}
                   </h3>
