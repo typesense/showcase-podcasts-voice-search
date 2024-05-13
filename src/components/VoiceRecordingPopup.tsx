@@ -68,6 +68,7 @@ export default function VoiceRecordingPopup({
       open={isOpen}
       onOpenChange={(open) => {
         !open && handleStopRecording();
+        open && toggleRecording();
         setIsOpen(open);
       }}
     >
