@@ -6,19 +6,28 @@ import {
 } from './lib/typesense';
 import VoiceSearchPopup from './components/VoiceRecordingPopup';
 import { Button } from './components/ui/button';
-import { LucideSearch, MicIcon } from 'lucide-react';
+import { MicIcon } from 'lucide-react';
 import Heading from './components/Heading';
+import Hits from './components/Hits';
+import SearchBox from './components/SearchBox';
+import useSearchParams from './hooks/useSearchParams';
+import SearchPagination from './components/SearchPagination';
+import AudioPreview from './components/AudioPreview';
 
 function App() {
+  const { urlParams, push } = useSearchParams();
+  const q = urlParams.get('q');
+  const page = parseInt(urlParams.get('page') || '1');
   const [base64Audio, setBase64Audio] = useState<string | null>(null);
   const [data, setData] = useState<_PodcastHit[]>([]);
-  const [query, setQuery] = useState('');
+  const [maxPages, setMaxPages] = useState(100);
+  const [isLastPage, setIsLastPage] = useState(false);
 
   useEffect(() => {
     const abortController = new AbortController();
 
     if (!base64Audio) return setData([]);
-    const fetchAutocomplete = async (base64Audio: string) => {
+    const fetchSearchResults = async (base64Audio: string) => {
       try {
         const results = await typesense.multiSearch.perform({
           searches: [
@@ -31,36 +40,62 @@ function App() {
           ],
         });
         const res = results.results?.[0] as _PodcastSearchResponse;
+        console.log('voice', results.results);
 
         setData(res.hits || []);
-        setQuery(
-          res.request_params.voice_query?.transcribed_query.trim() || ''
-        );
+        push({
+          q: res.request_params.voice_query?.transcribed_query.trim() || '',
+          page: 1,
+        });
       } catch (error) {
         console.log(error);
       }
     };
-    fetchAutocomplete(base64Audio.split('data:audio/wav;base64,')[1]);
+
+    fetchSearchResults(base64Audio.split('data:audio/wav;base64,')[1]);
 
     return () => {
       abortController.abort();
     };
   }, [base64Audio]);
 
+  useEffect(() => {
+    const abortController = new AbortController();
+
+    (async (q: string) => {
+      if (page >= maxPages) return setIsLastPage(true);
+      try {
+        const results = await typesense.multiSearch.perform({
+          searches: [
+            {
+              q,
+              collection: 'podcasts',
+              query_by: 'title,author,description',
+              per_page: 20,
+              page,
+            },
+          ],
+        });
+        const res = results.results?.[0] as _PodcastSearchResponse;
+        console.log(results.results);
+
+        setData(res.hits || []);
+      } catch (error) {
+        console.log(error);
+      }
+    })(q || '*');
+
+    return () => {
+      abortController.abort();
+    };
+  }, [page]);
+  console.log(page);
+
   return (
     <main className='max-w-3xl m-auto py-10'>
       <Heading />
       <div className='flex gap-2 mb-8'>
-        <div className='relative w-full'>
-          <LucideSearch className='absolute top-1/2 -translate-y-1/2 left-4 stroke-1 size-5 stroke-muted-foreground' />
-          <input
-            type='text'
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className='flex h-10 w-full px-12 rounded-3xl border border-input bg-background py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50'
-            placeholder='Search...'
-          />
-        </div>
+        <SearchBox />
         <VoiceSearchPopup
           handleBase64AudioChange={(base64Audio) => setBase64Audio(base64Audio)}
         >
@@ -69,40 +104,9 @@ function App() {
           </Button>
         </VoiceSearchPopup>
       </div>
-      {data && (
-        <ul className='flex flex-col gap-2'>
-          {data.map(
-            ({ document: { title, description, author, image, id } }) => (
-              <li
-                className='p-2 flex h-28 hover:bg-muted transition rounded-lg border'
-                key={id}
-              >
-                <img
-                  className='aspect-square rounded-lg min-h-full'
-                  src={image}
-                  alt={`${title}: ${description}`}
-                />
-                <div className='flex flex-col items-start text-left px-4 py-0.5'>
-                  <h3 className='text-base font-medium line-clamp-1'>
-                    {title}
-                  </h3>
-                  <small className='text-xs mb-3 line-clamp-1'>{author}</small>
-                  <p className='line-clamp-2 text-xs text-muted-foreground'>
-                    {description}
-                  </p>
-                </div>
-              </li>
-            )
-          )}
-        </ul>
-      )}
-      {base64Audio && (
-        <audio
-          className='h-12 fixed bottom-4 right-4'
-          controls
-          src={base64Audio}
-        ></audio>
-      )}
+      {data && <Hits data={data} />}
+      <SearchPagination pagination={{ currentPage: page, maxPages }} />
+      {base64Audio && <AudioPreview base64Audio={base64Audio} />}
     </main>
   );
 }
