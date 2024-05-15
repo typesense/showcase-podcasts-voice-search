@@ -13,17 +13,19 @@ type _Props = {
 export default function SearchPagination({
   pagination: { currentPage, maxPages },
 }: _Props) {
+  const previousPage = currentPage - 1;
+  const nextPage = currentPage + 1;
   return (
     <Pagination>
       <PaginationContent>
         {currentPage > 1 && (
           <>
             <PaginationItem>
-              <PaginationPrevious page={currentPage - 1} />
+              <PaginationPrevious page={previousPage} />
             </PaginationItem>
             <PaginationItem>
-              <PaginationLink page={currentPage - 1}>
-                {currentPage - 1}
+              <PaginationLink page={previousPage}>
+                {previousPage}
               </PaginationLink>
             </PaginationItem>
           </>
@@ -37,15 +39,13 @@ export default function SearchPagination({
         {currentPage < maxPages && (
           <>
             <PaginationItem>
-              <PaginationLink page={currentPage + 1}>
-                {currentPage + 1}
-              </PaginationLink>
+              <PaginationLink page={nextPage}>{nextPage}</PaginationLink>
             </PaginationItem>
             <PaginationItem>
               <PaginationEllipsis />
             </PaginationItem>
             <PaginationItem>
-              <PaginationNext page={currentPage + 1} />
+              <PaginationNext page={nextPage} />
             </PaginationItem>
           </>
         )}

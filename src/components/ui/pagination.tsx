@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
 
 import { cn } from '@/lib/shadcn';
 import { ButtonProps, buttonVariants } from '@/components/ui/button';
-import useSearchParams from '@/hooks/useSearchParams';
+import { useSearchParams } from 'react-router-dom';
 
 const Pagination = ({ className, ...props }: React.ComponentProps<'nav'>) => (
   <nav
@@ -48,16 +48,20 @@ const PaginationLink = ({
   page,
   ...props
 }: PaginationLinkProps) => {
-  const { push } = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   return (
     <a
-      onClick={() => push({ page })}
+      onClick={() => {
+        searchParams.set('page', page.toString());
+        setSearchParams(searchParams);
+      }}
       aria-current={isActive ? 'page' : undefined}
       className={cn(
         buttonVariants({
           variant: isActive ? 'outline' : 'ghost',
           size,
         }),
+        'cursor-pointer',
         className
       )}
       {...props}
