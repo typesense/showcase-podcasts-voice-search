@@ -1,15 +1,17 @@
-import useSearchParams from '@/hooks/useSearchParams';
+import { useSearchParams } from 'react-router-dom';
 import { LucideSearch } from 'lucide-react';
 import { FormEvent, useEffect, useState } from 'react';
 
 export default function SearchBox() {
-  const { urlParams, push } = useSearchParams();
-  const q = urlParams.get('q') || '';
+  const [searchParams, setSearchParams] = useSearchParams();
+  const q = searchParams.get('q') || '';
   const [query, setQuery] = useState(q);
 
   function search(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    push({ q: query });
+    searchParams.set('q', query);
+    searchParams.set('page', '1');
+    setSearchParams(searchParams);
   }
   useEffect(() => {
     setQuery(q);
