@@ -21,10 +21,10 @@ export default function SearchPagination({
         {currentPage > 1 && (
           <>
             <PaginationItem>
-              <PaginationPrevious page={previousPage} />
+              <PaginationPrevious page={previousPage} href='#top' />
             </PaginationItem>
             <PaginationItem>
-              <PaginationLink page={previousPage}>
+              <PaginationLink page={previousPage} href='#top'>
                 {previousPage}
               </PaginationLink>
             </PaginationItem>
@@ -39,7 +39,9 @@ export default function SearchPagination({
         {currentPage < maxNumPages && (
           <>
             <PaginationItem>
-              <PaginationLink page={nextPage}>{nextPage}</PaginationLink>
+              <PaginationLink page={nextPage} href='#top'>
+                {nextPage}
+              </PaginationLink>
             </PaginationItem>
             {nextPage < maxNumPages && (
               <PaginationItem>
@@ -47,7 +49,7 @@ export default function SearchPagination({
               </PaginationItem>
             )}
             <PaginationItem>
-              <PaginationNext page={nextPage} />
+              <PaginationNext page={nextPage} href='#top' />
             </PaginationItem>
           </>
         )}
