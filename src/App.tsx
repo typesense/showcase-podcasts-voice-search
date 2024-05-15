@@ -82,7 +82,7 @@ function App() {
     return () => {
       abortController.abort();
     };
-  }, [page]);
+  }, [q, page]);
 
   return (
     <main className='max-w-3xl m-auto pt-10 pb-20 flex flex-col gap-8'>
