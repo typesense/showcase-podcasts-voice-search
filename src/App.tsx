@@ -23,41 +23,33 @@ function App() {
   const [maxPages, setMaxPages] = useState(100);
   const [isLastPage, setIsLastPage] = useState(false);
 
-  useEffect(() => {
-    const abortController = new AbortController();
+  const handleBase64AudioChange = async (audioString: string | null) => {
+    if (!audioString) return;
+    setBase64Audio(audioString);
+    const voice_query = audioString.split('data:audio/wav;base64,')[1];
+    try {
+      const results = await typesense.multiSearch.perform({
+        searches: [
+          {
+            collection: 'podcasts',
+            query_by: 'title,author,description',
+            voice_query,
+            per_page: 20,
+          },
+        ],
+      });
+      const res = results.results?.[0] as _PodcastSearchResponse;
+      console.log('voice', results.results);
 
-    if (!base64Audio) return setData([]);
-    const fetchSearchResults = async (base64Audio: string) => {
-      try {
-        const results = await typesense.multiSearch.perform({
-          searches: [
-            {
-              collection: 'podcasts',
-              query_by: 'title,author,description',
-              voice_query: base64Audio,
-              per_page: 20,
-            },
-          ],
-        });
-        const res = results.results?.[0] as _PodcastSearchResponse;
-        console.log('voice', results.results);
-
-        setData(res.hits || []);
-        push({
-          q: res.request_params.voice_query?.transcribed_query.trim() || '',
-          page: 1,
-        });
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    fetchSearchResults(base64Audio.split('data:audio/wav;base64,')[1]);
-
-    return () => {
-      abortController.abort();
-    };
-  }, [base64Audio]);
+      setData(res.hits || []);
+      push({
+        q: res.request_params.voice_query?.transcribed_query.trim() || '',
+        page: 1,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -65,21 +57,19 @@ function App() {
     (async (q: string) => {
       if (page >= maxPages) return setIsLastPage(true);
       try {
-        const results = await typesense.multiSearch.perform({
-          searches: [
-            {
-              q,
-              collection: 'podcasts',
-              query_by: 'title,author,description',
-              per_page: 20,
-              page,
-            },
-          ],
-        });
-        const res = results.results?.[0] as _PodcastSearchResponse;
-        console.log(results.results);
+        const results = await typesense
+          .collections('podcasts')
+          .documents()
+          .search({
+            q,
+            collection: 'podcasts',
+            query_by: 'title,author,description',
+            per_page: 20,
+            page,
+          });
+        console.log(results);
 
-        setData(res.hits || []);
+        setData((results.hits as _PodcastHit[]) || []);
       } catch (error) {
         console.log(error);
       }
@@ -89,16 +79,13 @@ function App() {
       abortController.abort();
     };
   }, [page]);
-  console.log(page);
 
   return (
     <main className='max-w-3xl m-auto py-10'>
       <Heading />
       <div className='flex gap-2 mb-8'>
         <SearchBox />
-        <VoiceSearchPopup
-          handleBase64AudioChange={(base64Audio) => setBase64Audio(base64Audio)}
-        >
+        <VoiceSearchPopup handleBase64AudioChange={handleBase64AudioChange}>
           <Button className='rounded-full' size='icon'>
             <MicIcon className='size-5' />
           </Button>
