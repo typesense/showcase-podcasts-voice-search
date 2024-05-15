@@ -8,10 +8,10 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 type _Props = {
-  pagination: { currentPage: number; maxPages: number };
+  pagination: { currentPage: number; maxNumPages: number };
 };
 export default function SearchPagination({
-  pagination: { currentPage, maxPages },
+  pagination: { currentPage, maxNumPages },
 }: _Props) {
   const previousPage = currentPage - 1;
   const nextPage = currentPage + 1;
@@ -36,14 +36,16 @@ export default function SearchPagination({
             {currentPage}
           </PaginationLink>
         </PaginationItem>
-        {currentPage < maxPages && (
+        {currentPage < maxNumPages && (
           <>
             <PaginationItem>
               <PaginationLink page={nextPage}>{nextPage}</PaginationLink>
             </PaginationItem>
-            <PaginationItem>
-              <PaginationEllipsis />
-            </PaginationItem>
+            {nextPage < maxNumPages && (
+              <PaginationItem>
+                <PaginationEllipsis />
+              </PaginationItem>
+            )}
             <PaginationItem>
               <PaginationNext page={nextPage} />
             </PaginationItem>

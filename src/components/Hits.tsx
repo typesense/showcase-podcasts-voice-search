@@ -1,9 +1,9 @@
 import { _PodcastHit } from '@/lib/typesense';
 
-export default function Hits({ data }: { data: _PodcastHit[] }) {
+export default function Hits({ hits }: { hits: _PodcastHit[] }) {
   return (
     <ul className='flex flex-col gap-2'>
-      {data.map(({ document: { title, description, author, image, id } }) => (
+      {hits.map(({ document: { title, description, author, image, id } }) => (
         <li
           className='p-2 flex h-28 hover:bg-muted transition rounded-lg border'
           key={id}
