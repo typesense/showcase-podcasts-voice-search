@@ -7,16 +7,15 @@ import SearchBox from './components/SearchBox';
 import SearchPagination from './components/SearchPagination';
 import AudioPreview from './components/AudioPreview';
 import useSearch from './hooks/useSearch';
+import LoaderSVG from './components/LoaderSVG';
 
 function App() {
-  const { hits, base64Audio, pagination, handleBase64AudioChange } =
+  const { hits, base64Audio, isLoading, pagination, handleBase64AudioChange } =
     useSearch();
-  console.log(pagination);
-
   return (
-    <main className='max-w-3xl m-auto pt-10 pb-20 flex flex-col gap-8'>
+    <main className='max-w-3xl m-auto pt-10 pb-20 flex flex-col gap-8 items-center'>
       <Heading />
-      <div className='flex gap-2'>
+      <div className='flex gap-2 w-full'>
         <SearchBox />
         <VoiceSearchPopup handleBase64AudioChange={handleBase64AudioChange}>
           <Button className='rounded-full' size='icon'>
@@ -24,8 +23,15 @@ function App() {
           </Button>
         </VoiceSearchPopup>
       </div>
-      <Hits hits={hits} />
-      <SearchPagination pagination={pagination} />
+      {isLoading ? (
+        <LoaderSVG />
+      ) : (
+        <>
+          <Hits hits={hits} />
+          <SearchPagination pagination={pagination} />
+        </>
+      )}
+
       {base64Audio && <AudioPreview base64Audio={base64Audio} />}
     </main>
   );

@@ -14,8 +14,12 @@ export default function Hits({ hits }: { hits: _PodcastHit[] }) {
             alt={`${title}: ${description}`}
           />
           <div className='flex flex-col items-start text-left px-4 py-0.5'>
-            <h3 className='text-base font-medium line-clamp-1'>{title}</h3>
-            <small className='text-xs mb-3 line-clamp-1'>{author}</small>
+            <h3 className='text-base font-medium line-clamp-1 text-foreground'>
+              {title}
+            </h3>
+            <small className='text-xs mb-3 line-clamp-1 text-foreground'>
+              {author}
+            </small>
             <p className='line-clamp-2 text-xs text-muted-foreground'>
               {description}
             </p>

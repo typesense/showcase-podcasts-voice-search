@@ -15,11 +15,15 @@ export default function useSearch() {
   const [base64Audio, setBase64Audio] = useState<string | null>(null);
   const [hits, setHits] = useState<_PodcastHit[]>([]);
   const [maxNumPages, setMaxNumPages] = useState(5);
-  const [isLastPage, setIsLastPage] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
+  const HITS_PER_PAGE = 20;
+  // TODO: implement loading
+  // TODO: handling [BLANK_AUDIO]
   const handleBase64AudioChange = async (audioString: string | null) => {
     if (!audioString) return;
     setBase64Audio(audioString);
+    setIsLoading(true);
     const voice_query = audioString.split('data:audio/wav;base64,')[1];
     try {
       const results = await typesense.multiSearch.perform({
@@ -28,7 +32,7 @@ export default function useSearch() {
             collection: 'podcasts',
             query_by: 'title,author,description',
             voice_query,
-            per_page: 20,
+            per_page: HITS_PER_PAGE,
           },
         ],
       });
@@ -36,7 +40,7 @@ export default function useSearch() {
       console.log('voice', results.results);
 
       setHits(res.hits || []);
-      setMaxNumPages(Math.ceil(res.found / 20));
+      setMaxNumPages(Math.ceil(res.found / HITS_PER_PAGE));
       searchParams.set(
         'q',
         res.request_params.voice_query?.transcribed_query.trim() || ''
@@ -45,14 +49,15 @@ export default function useSearch() {
       setSearchParams(searchParams);
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
     const abortController = new AbortController();
-
+    setIsLoading(true);
     (async (q: string) => {
-      if (currentPage >= maxNumPages) return setIsLastPage(true);
       try {
         const results = await typesense
           .collections('podcasts')
@@ -60,15 +65,17 @@ export default function useSearch() {
           .search({
             q,
             query_by: 'title,author,description',
-            per_page: 20,
+            per_page: HITS_PER_PAGE,
             page: currentPage,
           });
         console.log(results);
 
         setHits((results.hits as _PodcastHit[]) || []);
-        setMaxNumPages(Math.ceil(results.found / 20));
+        setMaxNumPages(Math.ceil(results.found / HITS_PER_PAGE));
       } catch (error) {
         console.log(error);
+      } finally {
+        setIsLoading(false);
       }
     })(q || '*');
 
@@ -79,6 +86,8 @@ export default function useSearch() {
 
   return {
     hits,
+    isLastPage: currentPage >= maxNumPages,
+    isLoading,
     base64Audio,
     pagination: { currentPage, maxNumPages },
     handleBase64AudioChange,
