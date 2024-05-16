@@ -14,14 +14,14 @@ import { Button } from './ui/button';
 import { MicIcon } from 'lucide-react';
 import { cn } from '@/lib/shadcn';
 
-type _Props = {
+export type _VoiceRecordingPopupProps = {
   children: ReactNode;
   handleBase64AudioChange: (base64Audio: string | null) => void;
 };
 export default function VoiceRecordingPopup({
   children,
   handleBase64AudioChange,
-}: _Props) {
+}: _VoiceRecordingPopupProps) {
   const [recorder, setRecorder] = useState<RecordRTC | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 

@@ -18,7 +18,7 @@ export default function useSearch() {
   const [isLoading, setIsLoading] = useState(false);
 
   const HITS_PER_PAGE = 20;
-  // TODO: implement loading
+
   // TODO: handling [BLANK_AUDIO]
   const handleBase64AudioChange = async (audioString: string | null) => {
     if (!audioString) return;
@@ -38,13 +38,14 @@ export default function useSearch() {
       });
       const res = results.results?.[0] as _PodcastSearchResponse;
       console.log('voice', results.results);
+      const transcribedQuery =
+        res.request_params.voice_query?.transcribed_query.trim() || '';
 
       setHits(res.hits || []);
       setMaxNumPages(Math.ceil(res.found / HITS_PER_PAGE));
-      searchParams.set(
-        'q',
-        res.request_params.voice_query?.transcribed_query.trim() || ''
-      );
+      searchParams.set('q', transcribedQuery);
+      console.log('code hitted');
+
       searchParams.set('page', '1');
       setSearchParams(searchParams);
     } catch (error) {
