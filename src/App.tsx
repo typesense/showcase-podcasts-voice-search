@@ -13,9 +13,11 @@ function App() {
   const isNoResult = hits.length === 0;
 
   return (
-    <main className='max-w-3xl m-auto pt-10 pb-20 flex flex-col gap-8 items-center'>
-      <Heading />
-      <SearchBar handleBase64AudioChange={handleBase64AudioChange} />
+    <main className='max-w-3xl max-md:px-2 m-auto pt-10 pb-20 flex flex-col gap-8 items-center'>
+      <div className='w-full flex flex-col gap-4'>
+        <Heading />
+        <SearchBar handleBase64AudioChange={handleBase64AudioChange} />
+      </div>
 
       {isLoading ? (
         <LoaderSVG />
