@@ -13,6 +13,7 @@ import {
 import { Button } from './ui/button';
 import { MicIcon } from 'lucide-react';
 import { cn } from '@/lib/shadcn';
+import { toast } from 'sonner';
 
 export type _VoiceRecordingPopupProps = {
   children: ReactNode;
@@ -45,12 +46,20 @@ export default function VoiceRecordingPopup({
         setRecorder(record);
 
         record.startRecording();
+      })
+      .catch((e) => {
+        if (e instanceof DOMException && e.name === 'NotAllowedError')
+          toast.error('Permission denied!', {
+            description:
+              'Please go to your browser settings and allow access to microphone',
+          });
       });
   };
 
-  const handleStopRecording = () => {
+  const handleStopRecording = ({ isCancelRecording = false } = {}) => {
     if (!recorder) return;
     recorder.stopRecording(async () => {
+      if (isCancelRecording) return;
       try {
         const blob = recorder.getBlob();
         const url = await fileOrBlobToBase64(blob);
@@ -60,14 +69,14 @@ export default function VoiceRecordingPopup({
         console.log(error);
       }
     });
-    return setRecorder(null);
+    setRecorder(null);
   };
 
   return (
     <Dialog
       open={isOpen}
       onOpenChange={(open) => {
-        !open && handleStopRecording();
+        !open && handleStopRecording({ isCancelRecording: true });
         open && toggleRecording();
         setIsOpen(open);
       }}
