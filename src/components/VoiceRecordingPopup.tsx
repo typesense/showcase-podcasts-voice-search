@@ -84,10 +84,9 @@ export default function VoiceRecordingPopup({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className='sm:max-w-[424px]'>
         <DialogHeader>
-          <DialogTitle>Voice query</DialogTitle>
+          <DialogTitle>Search with your voice</DialogTitle>
           <DialogDescription>
-            To search by voice, go to your browser settings and allow access to
-            microphone
+            Try saying: 'finance', 'sports', 'travel', 'coaching',...
           </DialogDescription>
         </DialogHeader>
         <div className='flex flex-col gap-2 justify-center items-center mt-10'>
