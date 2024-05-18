@@ -43,8 +43,8 @@ export default function useSearch() {
 
       setHits(res.hits || []);
       setMaxNumPages(Math.ceil(res.found / HITS_PER_PAGE));
-      searchParams.set('q', transcribedQuery);
 
+      searchParams.set('q', transcribedQuery);
       searchParams.set('page', '1');
       setSearchParams(searchParams);
     } catch (error) {
@@ -56,7 +56,6 @@ export default function useSearch() {
   };
 
   useEffect(() => {
-    const abortController = new AbortController();
     setIsLoading(true);
     (async (q: string) => {
       try {
@@ -79,10 +78,6 @@ export default function useSearch() {
         setIsLoading(false);
       }
     })(q || '*');
-
-    return () => {
-      abortController.abort();
-    };
   }, [q, currentPage]);
 
   return {
