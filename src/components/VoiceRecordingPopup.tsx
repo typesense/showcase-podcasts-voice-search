@@ -1,4 +1,4 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode, useRef, useState } from 'react';
 import RecordRTC from 'recordrtc';
 import { fileOrBlobToBase64 } from '../utils/base64Utils';
 import {
@@ -14,6 +14,7 @@ import { Button } from './ui/button';
 import { MicIcon } from 'lucide-react';
 import { cn } from '@/lib/shadcn';
 import { toast } from 'sonner';
+import hark from 'hark';
 
 export type _VoiceRecordingPopupProps = {
   children: ReactNode;
@@ -23,17 +24,20 @@ export default function VoiceRecordingPopup({
   children,
   handleBase64AudioChange,
 }: _VoiceRecordingPopupProps) {
-  const [recorder, setRecorder] = useState<RecordRTC | null>(null);
+  const recorderRef = useRef<RecordRTC | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleRecording = () => {
-    if (recorder) return handleStopRecording();
+    if (recorderRef.current) return handleStopRecording();
     navigator.mediaDevices
       .getUserMedia({
         audio: true,
       })
       .then(async function (stream) {
-        const record = new RecordRTC(stream, {
+        streamRef.current = stream;
+        recorderRef.current = new RecordRTC(stream, {
           type: 'audio',
           mimeType: 'audio/wav',
           desiredSampRate: 16000,
@@ -43,9 +47,28 @@ export default function VoiceRecordingPopup({
           numberOfAudioChannels: 1,
           disableLogs: true,
         });
-        setRecorder(record);
+        recorderRef.current.startRecording();
+        setIsRecording(true);
 
-        record.startRecording();
+        const WAIT_SECONDS = 0.5; // fire search event if the user done speaking
+        const INITIAL_WAIT_SECONDS = 5; // cancel recording if the user does not speak after 5 seconds
+
+        let stopped_speaking_timeout = setTimeout(() => {
+          handleStopRecording({ isCancelRecording: true });
+          toast.error('Did not hear that. Please try again.');
+        }, INITIAL_WAIT_SECONDS * 1000);
+
+        const speechEvents = hark(stream);
+
+        speechEvents.on('speaking', () =>
+          clearTimeout(stopped_speaking_timeout)
+        );
+
+        speechEvents.on('stopped_speaking', () => {
+          stopped_speaking_timeout = setTimeout(() => {
+            handleStopRecording();
+          }, WAIT_SECONDS * 1000);
+        });
       })
       .catch((e) => {
         if (e instanceof DOMException && e.name === 'NotAllowedError')
@@ -57,21 +80,25 @@ export default function VoiceRecordingPopup({
   };
 
   const handleStopRecording = ({ isCancelRecording = false } = {}) => {
-    if (!recorder) return;
-    recorder.stopRecording(async () => {
-      if (isCancelRecording) return;
-      try {
-        const blob = recorder.getBlob();
-        const url = await fileOrBlobToBase64(blob);
-        handleBase64AudioChange(url);
-        setIsOpen(false);
-      } catch (error) {
-        console.log(error);
-      }
+    // stop user media recording
+    streamRef.current?.getTracks().forEach((track) => {
+      track.stop();
     });
-    setRecorder(null);
+    recorderRef.current?.stopRecording(async () => {
+      if (!recorderRef.current) return;
+      if (!isCancelRecording) {
+        try {
+          const blob = recorderRef.current.getBlob();
+          const url = await fileOrBlobToBase64(blob);
+          handleBase64AudioChange(url);
+        } catch (error) {
+          console.log(error);
+        }
+      }
+      setIsOpen(false);
+      recorderRef.current = null;
+    });
   };
-
   return (
     <Dialog
       open={isOpen}
@@ -93,7 +120,7 @@ export default function VoiceRecordingPopup({
           <Button
             className={cn(
               'rounded-full w-20 h-20',
-              recorder && 'bg-pink-600 hover:bg-pink-500'
+              isRecording && 'bg-pink-600 hover:bg-pink-500'
             )}
             onClick={toggleRecording}
             size='icon'
@@ -101,7 +128,7 @@ export default function VoiceRecordingPopup({
             <MicIcon className='size-8' />
           </Button>
           <small className='text-xs text-slate-400 min-h-4'>
-            {recorder && 'Recording...'}
+            {isRecording && 'Listening...'}
           </small>
         </div>
         <DialogFooter></DialogFooter>
