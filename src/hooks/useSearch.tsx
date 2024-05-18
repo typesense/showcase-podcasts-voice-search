@@ -5,6 +5,7 @@ import {
 } from '@/lib/typesense';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { toast } from 'sonner';
 
 export default function useSearch() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -37,18 +38,17 @@ export default function useSearch() {
         ],
       });
       const res = results.results?.[0] as _PodcastSearchResponse;
-      console.log('voice', results.results);
       const transcribedQuery =
         res.request_params.voice_query?.transcribed_query.trim() || '';
 
       setHits(res.hits || []);
       setMaxNumPages(Math.ceil(res.found / HITS_PER_PAGE));
       searchParams.set('q', transcribedQuery);
-      console.log('code hitted');
 
       searchParams.set('page', '1');
       setSearchParams(searchParams);
     } catch (error) {
+      toast.error('Sorry, there is an error. Please try again.');
       console.log(error);
     } finally {
       setIsLoading(false);
@@ -69,11 +69,11 @@ export default function useSearch() {
             per_page: HITS_PER_PAGE,
             page: currentPage,
           });
-        console.log(results);
 
         setHits((results.hits as _PodcastHit[]) || []);
         setMaxNumPages(Math.ceil(results.found / HITS_PER_PAGE));
       } catch (error) {
+        toast.error('Sorry, there is an error. Please try again.');
         console.log(error);
       } finally {
         setIsLoading(false);
