@@ -68,4 +68,5 @@ Only for indexing:
 
 ```env
 TYPESENSE_ADMIN_API_KEY=xyz
+FORCE_REINDEX=false
 ```
