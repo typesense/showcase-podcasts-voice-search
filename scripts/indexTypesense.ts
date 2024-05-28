@@ -11,9 +11,7 @@ const COLLECTION_NAME = 'podcasts';
     apiKey: process.env.TYPESENSE_ADMIN_API_KEY || 'xyz',
     nodes: [
       {
-        host: process.env.VITE_TYPESENSE_HOST || 'localhost',
-        port: parseInt(process.env.VITE_TYPESENSE_PORT || '8108'),
-        protocol: process.env.VITE_TYPESENSE_PROTOCOL || 'http',
+        url: process.env.VITE_TYPESENSE_URL || 'http://localhost:8108',
       },
     ],
     connectionTimeoutSeconds: 60 * 60,
