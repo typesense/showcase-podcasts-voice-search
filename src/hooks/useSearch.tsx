@@ -39,7 +39,7 @@ export default function useSearch() {
       });
       const res = results.results?.[0] as _PodcastSearchResponse;
       const transcribedQuery =
-        res.request_params.voice_query?.transcribed_query.trim() || '';
+        res.request_params.voice_query?.transcribed_query?.trim() || '';
 
       setHits(res.hits || []);
       setMaxNumPages(Math.ceil(res.found / HITS_PER_PAGE));
