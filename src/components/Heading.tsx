@@ -2,7 +2,7 @@ export default function Heading() {
   return (
     <div className='text-center' id='top'>
       <h1 className='text-3xl font-semibold mb-1'>
-        Search podcasts with voice
+        <a href='/'>Search podcasts with voice</a>
       </h1>
       <h2 className='m-auto w-max text-sm'>
         powered by{' '}

@@ -20,6 +20,7 @@ export type _VoiceRecordingPopupProps = {
   children: ReactNode;
   handleBase64AudioChange: (base64Audio: string | null) => void;
 };
+let stopped_speaking_timeout: NodeJS.Timeout;
 export default function VoiceRecordingPopup({
   children,
   handleBase64AudioChange,
@@ -53,7 +54,7 @@ export default function VoiceRecordingPopup({
         const WAIT_SECONDS = 0.5; // fire search event if the user done speaking
         const INITIAL_WAIT_SECONDS = 5; // cancel recording if the user does not speak after 5 seconds
 
-        let stopped_speaking_timeout = setTimeout(() => {
+        stopped_speaking_timeout = setTimeout(() => {
           handleStopRecording({ isCancelRecording: true });
           toast.error('Did not hear that. Please try again.');
         }, INITIAL_WAIT_SECONDS * 1000);
@@ -80,6 +81,7 @@ export default function VoiceRecordingPopup({
   };
 
   const handleStopRecording = ({ isCancelRecording = false } = {}) => {
+    clearTimeout(stopped_speaking_timeout);
     // stop user media recording
     streamRef.current?.getTracks().forEach((track) => {
       track.stop();
