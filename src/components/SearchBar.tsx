@@ -55,7 +55,9 @@ export default function SearchBar({
           />
         </fieldset>
       );
-    return <small className='text-muted-foreground'>Press to search</small>;
+    return (
+      <small className='text-muted-foreground'>Press and speak to search</small>
+    );
   };
   return (
     <div className='w-full mt-4'>
