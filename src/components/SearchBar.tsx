@@ -36,7 +36,6 @@ export default function SearchBar({
   }, [q]);
 
   const render = () => {
-    if (isLoading) return;
     if (query)
       return (
         <fieldset
@@ -71,12 +70,18 @@ export default function SearchBar({
             placeholder='Search...'
           />
         </form> */}
-        <VoiceRecordingPopup handleBase64AudioChange={handleBase64AudioChange}>
-          <Button className='rounded-full size-16' size='icon'>
-            <MicIcon className='size-7' />
-          </Button>
-        </VoiceRecordingPopup>
-        {render()}
+        {!isLoading && (
+          <>
+            <VoiceRecordingPopup
+              handleBase64AudioChange={handleBase64AudioChange}
+            >
+              <Button className='rounded-full size-16' size='icon'>
+                <MicIcon className='size-7' />
+              </Button>
+            </VoiceRecordingPopup>
+            {render()}
+          </>
+        )}
       </div>
       {/* <div className='mt-2 flex max-w-full gap-1 overflow-x-auto text-nowrap'>
         {EXAMPLE_SEARCH_TERMS.map((item) => (
