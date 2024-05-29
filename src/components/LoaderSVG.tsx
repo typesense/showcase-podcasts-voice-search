@@ -6,7 +6,7 @@ export default function LoaderSVG({
   ...props
 }: SVGProps<SVGSVGElement>) {
   return (
-    <div className='flex flex-col items-center'>
+    <div className='flex flex-col items-center my-10'>
       <svg
         className={cn('fill-foreground', className)}
         {...props}
