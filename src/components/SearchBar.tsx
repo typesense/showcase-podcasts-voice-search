@@ -21,7 +21,9 @@ export default function SearchBar({
 }: Pick<_VoiceRecordingPopupProps, 'handleBase64AudioChange'> & {
   isLoading: boolean;
 }) {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [
+    searchParams, // setSearchParams
+  ] = useSearchParams();
   const q = searchParams.get('q') || '';
   const [query, setQuery] = useState(q);
 
