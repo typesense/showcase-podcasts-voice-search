@@ -6,6 +6,8 @@ import useSearch from './hooks/useSearch';
 import LoaderSVG from './components/LoaderSVG';
 import NoResultsFound from './components/NoResultsFound';
 import SearchBar from './components/SearchBar';
+import { Button } from './components/ui/button';
+import { GithubIcon } from './components/icons';
 
 function App() {
   const { hits, base64Audio, isLoading, pagination, handleBase64AudioChange } =
@@ -14,7 +16,8 @@ function App() {
 
   return (
     <main className='max-w-3xl max-md:px-2 m-auto pt-10 pb-20 flex flex-col gap-8 items-center'>
-      <div className='w-full flex flex-col gap-4'>
+      <Header />
+      <div className='w-full flex flex-col gap-6'>
         <Heading />
         <SearchBar
           isLoading={isLoading}
@@ -39,5 +42,23 @@ function App() {
     </main>
   );
 }
+const Header = () => (
+  <header className=' w-full flex justify-end mb-[-2rem]'>
+    <a
+      href='https://github.com/typesense/showcase-podcasts-voice-search'
+      target='_blank'
+      rel='noopener noreferrer'
+    >
+      <Button
+        className='rounded-full'
+        variant={'ghost'}
+        size={'icon'}
+        title='Souce code'
+      >
+        <GithubIcon className='size-6' />
+      </Button>
+    </a>
+  </header>
+);
 
 export default App;

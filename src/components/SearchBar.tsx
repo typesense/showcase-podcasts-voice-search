@@ -62,7 +62,7 @@ export default function SearchBar({
     );
   };
   return (
-    <div className='w-full mt-4'>
+    <div className='w-full'>
       <div className='flex flex-col gap-2 items-center'>
         {/* <form onSubmit={search} className='relative flex-1'>
           <LucideSearch className='absolute top-1/2 -translate-y-1/2 left-4 stroke-1 size-5 stroke-muted-foreground' />
