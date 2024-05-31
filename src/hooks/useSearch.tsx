@@ -17,14 +17,15 @@ export default function useSearch() {
   const [hits, setHits] = useState<_PodcastHit[]>([]);
   const [maxNumPages, setMaxNumPages] = useState(5);
   const [isLoading, setIsLoading] = useState(false);
+  const [isTranscribingVoice, setIsTranscribingVoice] = useState(false);
 
   const HITS_PER_PAGE = 20;
 
-  // TODO: handling [BLANK_AUDIO]
   const handleBase64AudioChange = async (audioString: string | null) => {
     if (!audioString) return;
     setBase64Audio(audioString);
     setIsLoading(true);
+    setIsTranscribingVoice(true);
     const voice_query = audioString.split('data:audio/wav;base64,')[1];
     try {
       const results = await typesense.multiSearch.perform({
@@ -52,6 +53,7 @@ export default function useSearch() {
       console.log(error);
     } finally {
       setIsLoading(false);
+      setIsTranscribingVoice(false);
     }
   };
 
@@ -84,6 +86,7 @@ export default function useSearch() {
     hits,
     isLastPage: currentPage >= maxNumPages,
     isLoading,
+    isTranscribingVoice,
     base64Audio,
     pagination: { currentPage, maxNumPages },
     handleBase64AudioChange,

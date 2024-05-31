@@ -10,8 +10,14 @@ import { Button } from './components/ui/button';
 import { GithubIcon } from './components/icons';
 
 function App() {
-  const { hits, base64Audio, isLoading, pagination, handleBase64AudioChange } =
-    useSearch();
+  const {
+    hits,
+    base64Audio,
+    isLoading,
+    isTranscribingVoice,
+    pagination,
+    handleBase64AudioChange,
+  } = useSearch();
   const isNoResult = hits.length === 0;
 
   return (
@@ -26,7 +32,7 @@ function App() {
       </div>
 
       {isLoading ? (
-        <LoaderSVG />
+        <LoaderSVG isTranscribingVoice={isTranscribingVoice} />
       ) : (
         <>
           <Hits hits={hits} />
