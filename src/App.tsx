@@ -8,6 +8,9 @@ import NoResultsFound from './components/NoResultsFound';
 import SearchBar from './components/SearchBar';
 import { Button } from './components/ui/button';
 import { GithubIcon } from './components/icons';
+import { useEffect } from 'react';
+import { connect } from 'extendable-media-recorder-wav-encoder';
+import { register } from 'extendable-media-recorder';
 
 function App() {
   const {
@@ -19,6 +22,10 @@ function App() {
     handleBase64AudioChange,
   } = useSearch();
   const isNoResult = hits.length === 0;
+
+  useEffect(() => {
+    (async () => register(await connect()))();
+  }, []);
 
   return (
     <main className='max-w-3xl max-md:px-2 m-auto pt-10 pb-20 flex flex-col gap-8 items-center'>

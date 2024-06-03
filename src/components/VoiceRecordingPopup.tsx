@@ -1,5 +1,4 @@
 import { ReactNode, useRef, useState } from 'react';
-import RecordRTC from 'recordrtc';
 import { fileOrBlobToBase64 } from '../utils/base64Utils';
 import {
   Dialog,
@@ -15,6 +14,7 @@ import { MicIcon } from 'lucide-react';
 import { cn } from '@/lib/shadcn';
 import { toast } from 'sonner';
 import hark from 'hark';
+import { IMediaRecorder, MediaRecorder } from 'extendable-media-recorder';
 
 export type _VoiceRecordingPopupProps = {
   children: ReactNode;
@@ -25,7 +25,7 @@ export default function VoiceRecordingPopup({
   children,
   handleBase64AudioChange,
 }: _VoiceRecordingPopupProps) {
-  const recorderRef = useRef<RecordRTC | null>(null);
+  const recorderRef = useRef<IMediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -38,17 +38,24 @@ export default function VoiceRecordingPopup({
       })
       .then(async function (stream) {
         streamRef.current = stream;
-        recorderRef.current = new RecordRTC(stream, {
-          type: 'audio',
-          mimeType: 'audio/wav',
-          desiredSampRate: 16000,
-          audioBitsPerSecond: 16 * 16000, // bitrate = bitDepth(16-bit) * sampleRate
-          // https://github.com/muaz-khan/RecordRTC/issues/589
-          recorderType: RecordRTC.StereoAudioRecorder, // force for all browsers
-          numberOfAudioChannels: 1,
-          disableLogs: true,
-        });
-        recorderRef.current.startRecording();
+        // https://github.com/chrisguttandin/extendable-media-recorder
+        const audioContext = new AudioContext({ sampleRate: 16000 });
+        const mediaStreamAudioSourceNode = new MediaStreamAudioSourceNode(
+          audioContext,
+          { mediaStream: stream }
+        );
+        const mediaStreamAudioDestinationNode =
+          new MediaStreamAudioDestinationNode(audioContext);
+
+        mediaStreamAudioSourceNode.connect(mediaStreamAudioDestinationNode);
+
+        recorderRef.current = new MediaRecorder(
+          mediaStreamAudioDestinationNode.stream,
+          { mimeType: 'audio/wav' }
+        );
+
+        recorderRef.current.onerror = (e) => console.log(e);
+        recorderRef.current.start();
         setIsRecording(true);
 
         const WAIT_SECONDS = 0.5; // fire search event if the user done speaking
@@ -86,21 +93,30 @@ export default function VoiceRecordingPopup({
     streamRef.current?.getTracks().forEach((track) => {
       track.stop();
     });
-    recorderRef.current?.stopRecording(async () => {
-      if (!recorderRef.current) return;
+    if (!recorderRef.current) return;
+
+    const localAudioChunks: Blob[] = [];
+    recorderRef.current.ondataavailable = (event) => {
+      if (typeof event.data === 'undefined') return;
+      if (event.data.size === 0) return;
+      localAudioChunks.push(event.data);
+    };
+    recorderRef.current.onstop = async () => {
       if (!isCancelRecording) {
-        try {
-          const blob = recorderRef.current.getBlob();
-          const url = await fileOrBlobToBase64(blob);
-          handleBase64AudioChange(url);
-        } catch (error) {
-          console.log(error);
-        }
+        const blob = new Blob(localAudioChunks, {
+          type: recorderRef.current?.mimeType,
+        });
+        const base64 = await fileOrBlobToBase64(blob);
+        handleBase64AudioChange(base64);
       }
-      setIsOpen(false);
       recorderRef.current = null;
-    });
+      setIsOpen(false);
+      setIsRecording(false);
+    };
+
+    recorderRef.current.stop();
   };
+
   return (
     <Dialog
       open={isOpen}
