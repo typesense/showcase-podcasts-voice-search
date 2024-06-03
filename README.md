@@ -12,7 +12,7 @@ This is a demo that showcase <a href="https://typesense.org/docs/26.0/api/voice-
 
 The dataset contains metadata of 96K podcasts (after being filtered) and is from <a href="https://www.kaggle.com/datasets/listennotes/all-podcast-episodes-published-in-december-2017" target="_blank">Listen Notes</a>.
 
-This demo uses <a href="https://github.com/muaz-khan/RecordRTC" target="_blank">RecordRTC</a> to record audio and <a href="https://github.com/otalk/hark" target="_blank">hark</a> for silence detection.
+This demo uses <a href="https://github.com/chrisguttandin/extendable-media-recorder" target="_blank">extendable-media-recorder</a> to record WAV audio and <a href="https://github.com/otalk/hark" target="_blank">hark</a> for silence detection.
 
 ## Project Structure
 
