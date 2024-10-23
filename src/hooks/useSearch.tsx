@@ -16,7 +16,7 @@ export default function useSearch() {
   const [base64Audio, setBase64Audio] = useState<string | null>(null);
   const [hits, setHits] = useState<_PodcastHit[]>([]);
   const [maxNumPages, setMaxNumPages] = useState(5);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isTranscribingVoice, setIsTranscribingVoice] = useState(false);
 
   const HITS_PER_PAGE = 20;
