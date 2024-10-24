@@ -57,16 +57,4 @@ Open http://localhost:5173 to see the app ✌️
 
 ## Environment
 
-Set env variables in `.env` file to point the app to the Typesense Cluster
-
-```env
-VITE_TYPESENSE_SEARCH_ONLY_API_KEY=xxx
-VITE_TYPESENSE_URL=https://xxxxxxx.typesense.net:443
-```
-
-Only for indexing:
-
-```env
-TYPESENSE_ADMIN_API_KEY=xyz
-FORCE_REINDEX=false
-```
+See [.env.example](.env.example) for environment variables.

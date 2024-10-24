@@ -3,6 +3,7 @@ import {
   _PodcastSearchResponse,
   typesense,
 } from '@/lib/typesense';
+import { HITS_PER_PAGE } from '@/data/CONSTANTS';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -18,8 +19,6 @@ export default function useSearch() {
   const [maxNumPages, setMaxNumPages] = useState(5);
   const [isLoading, setIsLoading] = useState(true);
   const [isTranscribingVoice, setIsTranscribingVoice] = useState(false);
-
-  const HITS_PER_PAGE = 20;
 
   const handleBase64AudioChange = async (audioString: string | null) => {
     if (!audioString) return;
@@ -58,7 +57,10 @@ export default function useSearch() {
   };
 
   useEffect(() => {
+    // check if page 1 is already fetched by the above `handleBase64AudioChange` function
+    if (hits.length != 0 && currentPage == 1) return;
     setIsLoading(true);
+    // this function handles pagination using the transcribed query stored in URL parameters
     (async (q: string) => {
       try {
         const results = await typesense
@@ -80,7 +82,7 @@ export default function useSearch() {
         setIsLoading(false);
       }
     })(q || '*');
-  }, [q, currentPage]);
+  }, [q, currentPage, hits.length]);
 
   return {
     hits,
